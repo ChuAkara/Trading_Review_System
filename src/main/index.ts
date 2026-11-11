@@ -79,15 +79,26 @@ function registerIpcHandlers(): void {
     })
     return buildSnapshot(exec.accountId)
   })
+
+  ipcMain.handle('journal:set-theme', (event, theme: 'obsidian' | 'alabaster') => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (win && process.platform === 'win32') {
+      win.setTitleBarOverlay({
+        color: theme === 'alabaster' ? '#f5f5f7' : '#09090b',
+        symbolColor: theme === 'alabaster' ? '#6e6e73' : '#9898a2',
+        height: 40
+      })
+    }
+  })
 }
 
-function createWindow(): void {
+function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 1320,
     height: 840,
     minWidth: 960,
     minHeight: 640,
-    show: false,
+    show: true,
     backgroundColor: '#09090b',
     titleBarStyle: 'hidden',
     titleBarOverlay: {
@@ -103,8 +114,20 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
+  mainWindow.once('ready-to-show', () => {
     mainWindow.show()
+    mainWindow.focus()
+  })
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (!mainWindow.isVisible()) {
+      mainWindow.show()
+    }
+    mainWindow.focus()
+  })
+
+  mainWindow.webContents.on('did-fail-load', (_event, code, desc, url) => {
+    console.error(`[Main] Failed to load ${url}: (${code}) ${desc}`)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -114,15 +137,25 @@ function createWindow(): void {
 
   const devUrl = process.env['ELECTRON_RENDERER_URL']
   if (devUrl) {
-    mainWindow.loadURL(devUrl)
+    void mainWindow.loadURL(devUrl)
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    void mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return mainWindow
 }
 
 app.whenReady().then(() => {
   registerIpcHandlers()
-  createWindow()
+  const win = createWindow()
+  // Ensure window surfaces to foreground on Windows even if parent shell had SW_HIDE
+  setTimeout(() => {
+    if (!win.isDestroyed()) {
+      win.show()
+      win.moveTop()
+      win.focus()
+    }
+  }, 300)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

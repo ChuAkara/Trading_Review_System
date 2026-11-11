@@ -25,6 +25,7 @@ export function App(): ReactElement {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    void window.pulseApi?.setWindowTheme(theme)
   }, [theme])
 
   useEffect(() => {
