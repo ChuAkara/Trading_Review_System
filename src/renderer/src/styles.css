@@ -1,0 +1,233 @@
+:root,
+[data-theme='obsidian'] {
+  --bg-canvas: #09090b;
+  --bg-sidebar: #0c0c0f;
+  --bg-card: #121216;
+  --bg-subtle: rgba(255, 255, 255, 0.038);
+  --bg-pill: rgba(255, 255, 255, 0.07);
+  --border-hairline: rgba(255, 255, 255, 0.068);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.065);
+  --text-primary: #f5f5f7;
+  --text-secondary: #9898a2;
+  --text-tertiary: #5e5e6a;
+  --accent: #38bdf8;
+  --profit: #30d158;
+  --profit-soft: rgba(48, 209, 88, 0.12);
+  --loss: #ff453a;
+  --loss-soft: rgba(255, 69, 58, 0.12);
+}
+
+[data-theme='alabaster'] {
+  --bg-canvas: #f5f5f7;
+  --bg-sidebar: #fbfbfd;
+  --bg-card: #ffffff;
+  --bg-subtle: rgba(0, 0, 0, 0.03);
+  --bg-pill: rgba(0, 0, 0, 0.055);
+  --border-hairline: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #9a9aa1;
+  --accent: #0071e3;
+  --profit: #159947;
+  --profit-soft: rgba(21, 153, 71, 0.09);
+  --loss: #d93025;
+  --loss-soft: rgba(217, 48, 37, 0.09);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI Variable Display',
+    'PingFang SC', 'Microsoft YaHei UI', sans-serif;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'JetBrains Mono', 'Cascadia Mono', Consolas, monospace;
+}
+
+.privacy-blur {
+  filter: blur(8px);
+  opacity: 0.6;
+  user-select: none;
+}
+
+.titlebar {
+  height: 40px;
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 148px 0 18px;
+  border-bottom: 1px solid var(--border-hairline);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  min-height: calc(100vh - 40px);
+}
+
+.sidebar {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-hairline);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-btn {
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 8px 11px;
+  border-radius: 9px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.nav-btn.active,
+.nav-btn:hover {
+  background: var(--bg-pill);
+  color: var(--text-primary);
+}
+
+.main-area {
+  padding: 24px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 1px solid var(--border-hairline);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--border-strong);
+}
+
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-canvas);
+  border-color: transparent;
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--card-highlight);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.card-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-val {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.card-sub {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+}
+
+.profit {
+  color: var(--profit);
+}
+
+.loss {
+  color: var(--loss);
+}
+
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+
+.trade-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-hairline);
+  font-size: 12.5px;
+}
+
+.trade-row:last-child {
+  border-bottom: none;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 5px;
+  margin-right: 6px;
+}
+
+.badge-long {
+  background: var(--profit-soft);
+  color: var(--profit);
+}
+
+.badge-short {
+  background: var(--loss-soft);
+  color: var(--loss);
+}
+
+.badge-sys {
+  background: var(--bg-pill);
+  color: var(--text-secondary);
+}

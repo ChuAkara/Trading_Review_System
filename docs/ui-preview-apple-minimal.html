@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="obsidian">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pulse · 极简加密复盘客户端 UI 概念示例 (Apple Indie Style)</title>
+  <style>
+    /* ==========================================================================
+       1. Apple Indie Developer Design Tokens (3 Switchable Themes)
+       Inspired by: Fey, Copilot Money, Linear, Raycast, Things 3
+       ========================================================================== */
+    :root,
+    [data-theme="obsidian"] {
+      --bg-canvas: #09090b;
+      --bg-ambient: radial-gradient(1100px 500px at 50% -120px, rgba(56, 189, 248, 0.065), transparent 70%);
+      --bg-sidebar: #0c0c0f;
+      --bg-card: #121216;
+      --bg-card-hover: #16161b;
+      --bg-subtle: rgba(255, 255, 255, 0.038);
+      --bg-pill: rgba(255, 255, 255, 0.06);
+      --bg-pill-active: rgba(255, 255, 255, 0.13);
+      --border-hairline: rgba(255, 255, 255, 0.065);
+      --border-strong: rgba(255, 255, 255, 0.12);
+      --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.065);
+      --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.55);
+
+      --text-primary: #f5f5f7;
+      --text-secondary: #9898a2;
+      --text-tertiary: #5e5e6a;
+
+      --accent: #38bdf8;
+      --profit: #30d158;
+      --profit-soft: rgba(48, 209, 88, 0.12);
+      --loss: #ff453a;
+      --loss-soft: rgba(255, 69, 58, 0.12);
+      --chart-grid: rgba(255, 255, 255, 0.04);
+      --glass-blur: none;
+    }
+
+    [data-theme="alabaster"] {
+      --bg-canvas: #f5f5f7;
+      --bg-ambient: radial-gradient(1000px 420px at 50% -120px, rgba(0, 122, 255, 0.045), transparent 70%);
+      --bg-sidebar: #fbfbfd;
+      --bg-card: #ffffff;
+      --bg-card-hover: #fcfcfe;
+      --bg-subtle: rgba(0, 0, 0, 0.028);
+      --bg-pill: rgba(0, 0, 0, 0.045);
+      --bg-pill-active: #ffffff;
+      --border-hairline: rgba(0, 0, 0, 0.055);
+      --border-strong: rgba(0, 0, 0, 0.1);
+      --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 10px 28px -8px rgba(0, 0, 0, 0.045);
+
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #9a9aa1;
+
+      --accent: #0071e3;
+      --profit: #159947;
+      --profit-soft: rgba(21, 153, 71, 0.09);
+      --loss: #d93025;
+      --loss-soft: rgba(217, 48, 37, 0.085);
+      --chart-grid: rgba(0, 0, 0, 0.045);
+      --glass-blur: none;
+    }
+
+    [data-theme="titanium"] {
+      --bg-canvas: #0b0d12;
+      --bg-ambient:
+        radial-gradient(800px 420px at 18% 0%, rgba(99, 102, 241, 0.14), transparent 65%),
+        radial-gradient(750px 380px at 85% 8%, rgba(16, 185, 129, 0.10), transparent 65%);
+      --bg-sidebar: rgba(16, 19, 26, 0.65);
+      --bg-card: rgba(22, 25, 34, 0.62);
+      --bg-card-hover: rgba(28, 32, 44, 0.75);
+      --bg-subtle: rgba(255, 255, 255, 0.042);
+      --bg-pill: rgba(255, 255, 255, 0.065);
+      --bg-pill-active: rgba(255, 255, 255, 0.15);
+      --border-hairline: rgba(255, 255, 255, 0.085);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --card-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.11);
+      --card-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+
+      --accent: #818cf8;
+      --profit: #34d399;
+      --profit-soft: rgba(52, 211, 153, 0.13);
+      --loss: #fb7185;
+      --loss-soft: rgba(251, 113, 133, 0.13);
+      --chart-grid: rgba(255, 255, 255, 0.05);
+      --glass-blur: blur(24px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI Variable Display", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: var(--bg-ambient);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      transition: background-color 0.28s ease, color 0.25s ease;
+    }
+
+    .tnum {
+      font-variant-numeric: tabular-nums;
+      font-family: "SF Mono", "JetBrains Mono", "Cascadia Mono", ui-monospace, Menlo, Consolas, monospace;
+      letter-spacing: -0.02em;
+    }
+
+    /* Privacy Mode Blur */
+    body[data-privacy="on"] .sensitive {
+      filter: blur(8px);
+      opacity: 0.62;
+      user-select: none;
+    }
+    .sensitive {
+      transition: filter 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+    }
+
+    /* Top Concept Preview Bar */
+    .concept-switcher-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--border-hairline);
+      background: color-mix(in srgb, var(--bg-canvas) 78%, transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      font-size: 12px;
+    }
+
+    .window-dots {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot.close { background: #ff5f57; }
+    .dot.min { background: #febc2e; }
+    .dot.max { background: #28c840; }
+
+    .status-capsules {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 11.5px;
+    }
+    .capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--profit);
+      box-shadow: 0 0 8px var(--profit);
+    }
+
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 10px;
+      background: var(--bg-pill);
+      border: 1px solid var(--border-hairline);
+      gap: 2px;
+    }
+    .segmented button {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 5px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .segmented button.active {
+      background: var(--bg-pill-active);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    .segmented button:hover:not(.active) {
+      color: var(--text-primary);
+    }
+
+    /* Main Desktop App Shell */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 216px minmax(0, 1fr);
+      max-width: 1460px;
+      margin: 0 auto;
+      min-height: calc(100vh - 49px);
+    }
+
+    @media (max-width: 960px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
+      }
+    }
+
+    /* Minimalist Sidebar */
+    .sidebar {
+      padding: 22px 14px;
+      border-right: 1px solid var(--border-hairline);
+      background: var(--bg-sidebar);
+      backdrop-filter: var(--glass-blur);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+    }
+    .brand-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, var(--text-primary), var(--text-secondary));
+      color: var(--bg-canvas);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+    }
+
+    .cmd-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.16s ease, background 0.16s ease;
+    }
+    .cmd-trigger:hover {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+    .kbd {
+      font-family: "SF Mono", ui-monospace, monospace;
+      font-size: 10.5px;
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: var(--bg-pill);
+      color: var(--text-tertiary);
+      border: 1px solid var(--border-hairline);
+    }
+
+    .nav-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .nav-group-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      padding: 6px 10px 4px;
+      letter-spacing: 0.03em;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7.5px 10px;
+      border-radius: 9px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .nav-item:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+    .nav-item.active {
+      background: var(--bg-pill);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .nav-badge {
+      margin-left: auto;
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-hairline);
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Main Workspace */
+    .workspace {
+      padding: 26px 32px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .workspace-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .page-heading h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+    .page-heading p {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ghost-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6.5px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+      box-shadow: var(--card-highlight);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    .ghost-btn:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-card-hover);
+    }
+    .primary-btn {
+      background: var(--text-primary);
+      color: var(--bg-canvas);
+      border-color: transparent;
+    }
+    .primary-btn:hover {
+      opacity: 0.9;
+      background: var(--text-primary);
+    }
+
+    /* Bento Grid Layout */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .bento-card {
+      background: var(--bg-card);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-hairline);
+      border-radius: 18px;
+      box-shadow: var(--card-highlight), var(--card-shadow);
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .bento-card:hover {
+      border-color: var(--border-strong);
+    }
+
+    .span-8 { grid-column: span 8; }
+    .span-4 { grid-column: span 4; }
+    .span-3 { grid-column: span 3; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    @media (max-width: 1100px) {
+      .span-8, .span-4, .span-6 { grid-column: span 12; }
+      .span-3 { grid-column: span 6; }
+    }
+
+    .card-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    /* Hero Equity Card */
+    .hero-metric-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-value {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+      color: var(--text-primary);
+    }
+    .pill-delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 500;
+      background: var(--profit-soft);
+      color: var(--profit);
+    }
+    .hero-sub {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .chart-wrap {
+      margin-top: 18px;
+      height: 172px;
+      width: 100%;
+    }
+
+    /* KPI Compact Cards */
+    .kpi-big {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-top: 2px;
+    }
+    .kpi-foot {
+      margin-top: auto;
+      padding-top: 12px;
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Minimal Ratio Bar */
+    .ratio-track {
+      margin-top: 12px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--bg-pill);
+      display: flex;
+      gap: 3px;
+      overflow: hidden;
+    }
+    .ratio-win {
+      width: 56%;
+      background: var(--profit);
+      border-radius: 999px;
+    }
+    .ratio-loss {
+      flex: 1;
+      background: var(--loss);
+      border-radius: 999px;
+      opacity: 0.85;
+    }
+
+    /* Clean Week Calendar Strip */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 6px;
+    }
+    .cal-cell {
+      padding: 9px 8px;
+      border-radius: 11px;
+      background: var(--bg-subtle);
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 66px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      cursor: pointer;
+    }
+    .cal-cell:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-strong);
+    }
+    .cal-cell.win {
+      background: var(--profit-soft);
+    }
+    .cal-cell.loss {
+      background: var(--loss-soft);
+    }
+    .cal-day {
+      font-size: 10.5px;
+      color: var(--text-tertiary);
+    }
+    .cal-pnl {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: auto;
+    }
+    .cal-cell.win .cal-pnl { color: var(--profit); }
+    .cal-cell.loss .cal-pnl { color: var(--loss); }
+
+    /* Borderless Clean Trade Feed */
+    .trade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 4px;
+    }
+    .trade-row {
+      display: grid;
+      grid-template-columns: 1.3fr 0.8fr 0.9fr 1fr;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      transition: background 0.14s ease;
+      cursor: pointer;
+    }
+    .trade-row:hover {
+      background: var(--bg-subtle);
+    }
+    .sym {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+    .side-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 5px;
+      letter-spacing: 0.02em;
+    }
+    .side-long { background: var(--profit-soft); color: var(--profit); }
+    .side-short { background: var(--loss-soft); color: var(--loss); }
+    .trade-meta {
+      color: var(--text-tertiary);
+      font-size: 11.5px;
+    }
+    .trade-pnl {
+      text-align: right;
+      font-weight: 600;
+    }
+    .text-profit { color: var(--profit); }
+    .text-loss { color: var(--loss); }
+
+    /* Sleek AI Insight Strip */
+    .ai-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 22px;
+      border-radius: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hairline);
+      box-shadow: var(--card-highlight), var(--card-shadow);
+    }
+    .ai-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .ai-orb {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--profit));
+      opacity: 0.9;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .ai-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Command Palette Modal (Cmd/Ctrl + K) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.52);
+      backdrop-filter: blur(6px);
+      display: none;
+      place-items: start center;
+      padding-top: 13vh;
+      z-index: 100;
+    }
+    .modal-backdrop.open {
+      display: grid;
+    }
+    .cmd-modal {
+      width: min(540px, 92vw);
+      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+    }
+    .cmd-input {
+      width: 100%;
+      padding: 15px 18px;
+      border: none;
+      border-bottom: 1px solid var(--border-hairline);
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+    .cmd-list {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .cmd-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .cmd-option:hover {
+      background: var(--bg-pill);
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body data-privacy="off">
+
+  <!-- Top Native Titlebar + Live Style Switcher -->
+  <header class="concept-switcher-bar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="window-dots" aria-hidden="true">
+        <span class="dot close"></span>
+        <span class="dot min"></span>
+        <span class="dot max"></span>
+      </div>
+      <div class="status-capsules">
+        <span class="capsule"><span class="pulse-dot"></span>本地 SQLite · <strong class="tnum">0.3ms</strong></span>
+        <span class="capsule">Binance 直连 · <strong class="tnum">36ms</strong></span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="color:var(--text-tertiary);">极简材质预览：</span>
+      <div class="segmented" id="themeSwitcher">
+        <button class="active" data-set-theme="obsidian">曜石极夜 (Fey 风)</button>
+        <button data-set-theme="alabaster">温润白瓷 (Copilot 风)</button>
+        <button data-set-theme="titanium">磨砂钛金 (Raycast 风)</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <!-- Left Minimalist Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">P</div>
+        <div>
+          <div class="brand-title">Pulse Journal</div>
+          <div class="brand-sub">Offline-First Crypto</div>
+        </div>
+      </div>
+
+      <div class="cmd-trigger" id="openCmdBtn">
+        <span>搜索交易、动作…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+
+      <nav class="nav-group">
+        <div class="nav-group-label">工作台</div>
+        <a href="#overview" class="nav-item active">总览看板</a>
+        <a href="#calendar" class="nav-item">盈亏日历 <span class="nav-badge tnum">11月</span></a>
+        <a href="#journal" class="nav-item">每日复盘</a>
+        <a href="#trades" class="nav-item">交易与 K 线回放 <span class="nav-badge tnum">26</span></a>
+        <a href="#ai" class="nav-item">AI 诊断台</a>
+      </nav>
+
+      <nav class="nav-group">
+        <div class="nav-group-label">系统沉淀</div>
+        <a href="#playbooks" class="nav-item">策略规则库</a>
+        <a href="#reports" class="nav-item">多维统计</a>
+        <a href="#missed" class="nav-item">踏空记录</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex;justify-content:space-between;color:var(--text-primary);font-weight:500;">
+          <span>Binance 主账户</span>
+          <span style="color:var(--profit);">只读</span>
+        </div>
+        <div>上次增量同步：刚刚 · 无异常尾差</div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <div class="workspace-header">
+        <div class="page-heading">
+          <h1>总览看板</h1>
+          <p>2026.10.20 – 2026.11.09 · Binance U本位永续（双向对冲模式已聚合）</p>
+        </div>
+
+        <div class="header-controls">
+          <div class="segmented" id="rangeSwitcher">
+            <button>7D</button>
+            <button class="active">21D</button>
+            <button>90D</button>
+            <button>ALL</button>
+          </div>
+          <button class="ghost-btn" id="privacyBtn" title="快捷键 Ctrl/Cmd + P">
+            <span id="privacyLabel">隐私脱敏：关</span>
+            <span class="kbd">⌘P</span>
+          </button>
+          <button class="ghost-btn primary-btn">+ 记录 / 同步</button>
+        </div>
+      </div>
+
+      <!-- Bento Grid -->
+      <section class="bento-grid">
+        <!-- Hero Net PnL + Smooth Spline Curve -->
+        <article class="bento-card span-8">
+          <div class="card-label">
+            <span>区间净盈亏 (已扣除手续费与资金费)</span>
+            <span class="tnum" style="color:var(--text-tertiary);">优势分 <strong style="color:var(--text-primary);">70.8</strong> / 100</span>
+          </div>
+          <div class="hero-metric-row">
+            <div class="hero-value tnum sensitive">+$63.90</div>
+            <span class="pill-delta tnum">▲ <span class="sensitive">$29.07</span> (+83.4%) 较前周期</span>
+          </div>
+          <div class="hero-sub tnum">
+            <span>已平仓 <strong>26</strong> 笔</span>
+            <span>手续费 <span class="sensitive">-$13.43</span> (含 BNB 折算)</span>
+            <span>资金费 <span class="sensitive">-$1.37</span></span>
+          </div>
+
+          <div class="chart-wrap">
+            <svg viewBox="0 0 720 170" width="100%" height="100%" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--profit)" stop-opacity="0.24" />
+                  <stop offset="100%" stop-color="var(--profit)" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="42" x2="720" y2="42" stroke="var(--chart-grid)" stroke-width="1" />
+              <line x1="0" y1="95" x2="720" y2="95" stroke="var(--chart-grid)" stroke-width="1" />
+              <line x1="0" y1="146" x2="720" y2="146" stroke="var(--border-hairline)" stroke-dasharray="3 3" stroke-width="1" />
+              <path d="M0,148 C65,147 110,112 165,112 C220,112 240,152 285,152 C330,152 365,104 420,104 C475,104 505,115 545,112 C585,108 615,74 660,48 C688,32 705,18 720,12 L720,168 L0,168 Z" fill="url(#equityGrad)" />
+              <path d="M0,148 C65,147 110,112 165,112 C220,112 240,152 285,152 C330,152 365,104 420,104 C475,104 505,115 545,112 C585,108 615,74 660,48 C688,32 705,18 720,12" fill="none" stroke="var(--profit)" stroke-width="2.2" stroke-linecap="round" />
+              <circle cx="717" cy="13" r="4" fill="var(--profit)" />
+            </svg>
+          </div>
+        </article>
+
+        <!-- Right 4-Column Stack: Win Rate + Payoff Ratio -->
+        <div class="span-4" style="display:grid;gap:14px;">
+          <article class="bento-card">
+            <div class="card-label">
+              <span>交易胜率与分布</span>
+              <span class="tnum">16 盈 · 10 亏</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div class="kpi-big tnum">61.5%</div>
+                <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">交易日胜率 <strong class="tnum" style="color:var(--text-secondary);">63.6%</strong> (7/11日)</div>
+              </div>
+              <svg width="58" height="58" viewBox="0 0 58 58">
+                <circle cx="29" cy="29" r="23" fill="none" stroke="var(--bg-pill)" stroke-width="5.5" />
+                <circle cx="29" cy="29" r="23" fill="none" stroke="var(--profit)" stroke-width="5.5"
+                  stroke-dasharray="89 145" stroke-linecap="round" transform="rotate(-90 29 29)" />
+              </svg>
+            </div>
+          </article>
+
+          <article class="bento-card">
+            <div class="card-label">
+              <span>盈利因子 & 盈亏比</span>
+              <span class="tnum" style="color:var(--profit);">PF 2.02</span>
+            </div>
+            <div class="kpi-big tnum">1.26 <span style="font-size:13px;font-weight:400;color:var(--text-tertiary);">盈亏比</span></div>
+            <div class="ratio-track">
+              <span class="ratio-win"></span>
+              <span class="ratio-loss"></span>
+            </div>
+            <div class="kpi-foot tnum">
+              <span>均盈 <strong class="text-profit sensitive">+$7.90</strong></span>
+              <span>均亏 <strong class="text-loss sensitive">-$6.25</strong></span>
+            </div>
+          </article>
+        </div>
+
+        <!-- 4 Small Precision Metrics -->
+        <article class="bento-card span-3">
+          <div class="card-label"><span>最大回撤</span><span>恢复系数</span></div>
+          <div class="kpi-big tnum text-loss sensitive">-$22.43</div>
+          <div class="kpi-foot tnum"><span>设置起始权益显示%</span><strong style="color:var(--text-primary);">2.85x</strong></div>
+        </article>
+
+        <article class="bento-card span-3">
+          <div class="card-label"><span>单笔数学期望</span><span>R 倍数</span></div>
+          <div class="kpi-big tnum text-profit sensitive">+$2.46</div>
+          <div class="kpi-foot"><span>每笔净期望收益</span><span class="tnum">+0.42R</span></div>
+        </article>
+
+        <article class="bento-card span-3">
+          <div class="card-label"><span>平均持仓时长</span><span>节奏</span></div>
+          <div class="kpi-big tnum">4h 10m</div>
+          <div class="kpi-foot"><span>日内波段为主</span><span>最佳 4 连胜</span></div>
+        </article>
+
+        <article class="bento-card span-3">
+          <div class="card-label"><span>极值交易日</span><span>11-06 / 10-26</span></div>
+          <div class="kpi-big tnum text-profit sensitive" style="font-size:21px;">+$27.64</div>
+          <div class="kpi-foot tnum"><span>最差日</span><span class="text-loss sensitive">-$15.86</span></div>
+        </article>
+
+        <!-- Minimalist Calendar Strip (Nov Week 1) -->
+        <article class="bento-card span-6">
+          <div class="card-label">
+            <span>2026年11月 · 首周热力切片</span>
+            <span class="tnum">周合计 <strong class="text-profit sensitive">+$65.59</strong> (19笔)</span>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-cell win"><span class="cal-day tnum">01 周日</span><span class="cal-pnl tnum sensitive">+$17.85</span></div>
+            <div class="cal-cell loss"><span class="cal-day tnum">02 周一</span><span class="cal-pnl tnum sensitive">-$0.04</span></div>
+            <div class="cal-cell loss"><span class="cal-day tnum">03 周二</span><span class="cal-pnl tnum sensitive">-$3.50</span></div>
+            <div class="cal-cell win"><span class="cal-day tnum">04 周三</span><span class="cal-pnl tnum sensitive">+$11.93</span></div>
+            <div class="cal-cell win"><span class="cal-day tnum">05 周四</span><span class="cal-pnl tnum sensitive">+$11.71</span></div>
+            <div class="cal-cell win"><span class="cal-day tnum">06 周五</span><span class="cal-pnl tnum sensitive">+$27.64</span></div>
+            <div class="cal-cell"><span class="cal-day tnum">07 周六</span><span class="cal-pnl tnum" style="color:var(--text-tertiary);">—</span></div>
+          </div>
+        </article>
+
+        <!-- Clean Borderless Recent Trades -->
+        <article class="bento-card span-6">
+          <div class="card-label">
+            <span>最近已平仓合单 (点击回放本地缓存 K 线)</span>
+            <span style="color:var(--accent);cursor:pointer;">全部 26 笔 →</span>
+          </div>
+          <div class="trade-list">
+            <div class="trade-row">
+              <span class="sym"><span class="side-tag side-short">SHORT</span>ZECUSDT</span>
+              <span class="trade-meta tnum">3 笔聚合</span>
+              <span class="trade-meta tnum">11-06</span>
+              <span class="trade-pnl tnum text-profit sensitive">+$32.20</span>
+            </div>
+            <div class="trade-row">
+              <span class="sym"><span class="side-tag side-short">SHORT</span>WMTUSDT</span>
+              <span class="trade-meta tnum">2 笔聚合</span>
+              <span class="trade-meta tnum">11-06</span>
+              <span class="trade-pnl tnum text-profit sensitive">+$7.49</span>
+            </div>
+            <div class="trade-row">
+              <span class="sym"><span class="side-tag side-long">LONG</span>BTCUSDT</span>
+              <span class="trade-meta tnum">4 笔聚合</span>
+              <span class="trade-meta tnum">11-06</span>
+              <span class="trade-pnl tnum text-loss sensitive">-$6.68</span>
+            </div>
+            <div class="trade-row">
+              <span class="sym"><span class="side-tag side-long">LONG</span>NVDAUSDT</span>
+              <span class="trade-meta tnum">2 笔聚合</span>
+              <span class="trade-meta tnum">11-06</span>
+              <span class="trade-pnl tnum text-loss sensitive">-$8.26</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Bottom Multi-LLM AI Strip -->
+      <section class="ai-banner">
+        <div class="ai-banner-left">
+          <div class="ai-orb">✦</div>
+          <div>
+            <div class="ai-title">
+              AI 区间诊断已就绪
+              <span class="kbd">Claude / DeepSeek / GPT / Gemini / Ollama</span>
+            </div>
+            <div class="ai-desc">本地统计画像已生成（1.8ms）· 做空胜率 78% 显著优于追涨做多，点击生成规则卡与风控建议。</div>
+          </div>
+        </div>
+        <button class="ghost-btn">开始流式诊断 →</button>
+      </section>
+    </main>
+  </div>
+
+  <!-- Cmd/Ctrl+K Command Palette -->
+  <div class="modal-backdrop" id="cmdModal">
+    <div class="cmd-modal" role="dialog" aria-label="快捷命令面板">
+      <input class="cmd-input" id="cmdInput" placeholder="输入命令或搜索币种 (如 BTCUSDT、同步、切换模型)..." />
+      <div class="cmd-list">
+        <div class="cmd-option"><span>⚡ 增量同步 Binance 永续与现货账单</span><span class="kbd">⌘S</span></div>
+        <div class="cmd-option" id="cmdPrivacy"><span>👁 切换金额隐私模糊模式 (适合截图分享)</span><span class="kbd">⌘P</span></div>
+        <div class="cmd-option"><span>✦ 使用 DeepSeek-R1 诊断近 21 天亏损归因</span><span class="kbd">⌘J</span></div>
+        <div class="cmd-option"><span>📦 导出本地 SQLite 加密备份快照</span><span class="kbd">⌘E</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme Switcher
+    document.querySelectorAll('#themeSwitcher button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#themeSwitcher button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.documentElement.setAttribute('data-theme', btn.dataset.setTheme);
+      });
+    });
+
+    // Range Pill Switcher
+    document.querySelectorAll('#rangeSwitcher button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#rangeSwitcher button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Privacy Mode Toggle
+    const togglePrivacy = () => {
+      const next = document.body.getAttribute('data-privacy') === 'on' ? 'off' : 'on';
+      document.body.setAttribute('data-privacy', next);
+      document.getElementById('privacyLabel').textContent = next === 'on' ? '隐私脱敏：开' : '隐私脱敏：关';
+    };
+    document.getElementById('privacyBtn').addEventListener('click', togglePrivacy);
+    document.getElementById('cmdPrivacy').addEventListener('click', () => {
+      togglePrivacy();
+      document.getElementById('cmdModal').classList.remove('open');
+    });
+
+    // Command Palette (Cmd/Ctrl + K & Cmd/Ctrl + P)
+    const modal = document.getElementById('cmdModal');
+    const input = document.getElementById('cmdInput');
+    document.getElementById('openCmdBtn').addEventListener('click', () => {
+      modal.classList.add('open');
+      input.focus();
+    });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('open');
+    });
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        modal.classList.toggle('open');
+        if (modal.classList.contains('open')) input.focus();
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        togglePrivacy();
+      }
+      if (e.key === 'Escape') modal.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

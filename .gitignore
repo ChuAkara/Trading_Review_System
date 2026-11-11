@@ -1,0 +1,26 @@
+# Dependencies & build artifacts
+node_modules/
+out/
+dist/
+release/
+coverage/
+
+# Local SQLite databases & user attachments
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+attachments/
+
+# Environment & credentials
+.env
+.env.*
+
+# Local saved reference webpage (exclude personal metadata & 3rd-party bundles)
+tsingxbt*
+.reference/
+
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
+*.log
